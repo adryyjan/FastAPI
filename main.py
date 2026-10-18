@@ -222,7 +222,7 @@ def generate_exception_handler(request: Request, exc: StarletteHTTPException):
          "message": message},
         status_code=exc.status_code
         )
-
+# trest
 @app.exception_handler(RequestValidationError)
 def validation_exception_handler(request: Request, exc: RequestValidationError):
     if request.url.path.startswith("/api"):
