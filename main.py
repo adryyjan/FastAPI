@@ -101,7 +101,7 @@ def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     result = db.execute(
         select(models.User).where(models.User.username == user.username),
     )
-    existing_user = result.scalar().first
+    existing_user = result.scalars().first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -111,7 +111,7 @@ def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     result = db.execute(
         select(models.User).where(models.User.email == user.email),
     )
-    existing_user = result.scalar().first
+    existing_user = result.scalars().first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -124,13 +124,14 @@ def create_user(user: UserCreate, db: Annotated[Session, Depends(get_db)]):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    return new_user
 
-@app.get("/api/users/{user_id}", response_model=PostResponse)
+@app.get("/api/users/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, db: Annotated[Session, Depends(get_db)]):
     result = db.execute(
         select(models.User).where(models.User.id == user_id),
     )
-    user = result.scalar().first()
+    user = result.scalars().first()
 
     if user:
         return user
@@ -144,7 +145,7 @@ def get_user_posts(user_id: int, db: Annotated[Session, Depends(get_db)]):
     result = db.execute(
         select(models.User).where(models.User.id == user_id),
     )
-    user = result.scalar().first()
+    user = result.scalars().first()
 
     if not user:
         raise HTTPException(
@@ -165,7 +166,7 @@ def get_posts(db: Annotated[Session, Depends(get_db)]):
     posts = results.scalars().all()
     return posts
 
-@app.post("api/posts", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
+@app.post("/api/posts", response_model=PostResponse, status_code=status.HTTP_201_CREATED)
 def create_post(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
     results = db.execute(
         select(models.User).where(models.User.id == post.user_id),
